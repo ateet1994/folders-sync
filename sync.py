@@ -7,6 +7,7 @@ class Sync:
      self.path1 = path1
      self.path2 = path2
      self.notinitialdir = False
+     self.walk(self.path1)
   def splitAndForm(self, path):
     return os.path.join(self.path2,path.replace(self.path1, '', 1))
 
@@ -24,20 +25,23 @@ class Sync:
       file2 = self.splitAndForm(filename)
       if not os.path.exists(file2):
         print 'Copying', file2
-        shutil.copy(filename, file2)
+        shutil.copy2(filename, file2)
         continue
       time1 = os.path.getmtime(filename)
       time2 = os.path.getmtime(file2)
-      if time1 < time2:
-#        print time1, '->', time2
-        print file2, '->', filename
-        os.remove(filename)
-        shutil.copy(file2, filename)
-      elif time1 > time2:
+      delta = time1 - time2
+      if abs(delta) < 2:
+        pass
+      elif delta > 0:
 #        print time1, '->', time2
         print filename, '->', file2
         os.remove(file2)
-        shutil.copy(filename, file2)
+        shutil.copy2(filename, file2)
+      else:
+#        print time1, '->', time2
+        print file2, '->', filename
+        os.remove(filename)
+        shutil.copy2(file2, filename)
    
   def walk(self, folder):
     print 'In', folder
@@ -64,4 +68,3 @@ if __name__ == '__main__':
     path1 = '/home/ateet/Documents/codes/temp/syn1/'
     path2 = '/home/ateet/Documents/codes/temp/syn2/'
   sync_obj = Sync(path1, path2)
-  sync_obj.walk(path1)
