@@ -5,7 +5,7 @@ import shutil, os, argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--dry-run', action='store_true')
 parser.add_argument('-v', '--verbose', action='store_true')
-parser.add_argument('folders', type=str, nargs=2)
+parser.add_argument('-f', '--folders', type=str, nargs=2, metavar=('folder1', 'folder2'))
 args = parser.parse_args()
 class Sync:
   def __init__(self, path1, path2, dry_run=False):
@@ -77,4 +77,7 @@ class Sync:
       os.chdir(folder)
       self.walk(os.path.abspath(directory))
 
-Sync(args.folders[0], args.folders[1], args.dry_run)
+folders = ['/home/ateet/Documents/codes/', '/grive/codes/']
+if args.folders:
+  folders = args.folders
+Sync(folders[0], folders[1], args.dry_run)
