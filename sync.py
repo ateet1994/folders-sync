@@ -6,13 +6,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--dry-run', action='store_true')
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-f', '--folders', type=str, nargs=2, metavar=('folder1', 'folder2'))
+parser.add_argument('-e', '--exclude', type=str, nargs='+', metavar=('folder'), help='relative to folder1')
 args = parser.parse_args()
 class Sync:
-  def __init__(self, path1, path2, dry_run=False):
-     self.path1 = path1
-     self.path2 = path2
+  def __init__(self, path1, path2, verbose=False, dry_run=False, exclude=None):
+     self.path1 = os.path.expanduser(path1)
+     self.path2 = os.path.expanduser(path2)
      self.notinitialdir = False
+     self.verbose = verbose
      self.dry_run = dry_run
+     self.exclude = exclude
      self.walk(self.path1)
   def splitAndForm(self, path):
     return os.path.join(self.path2,path.replace(self.path1, '', 1))
@@ -57,8 +60,14 @@ class Sync:
           shutil.copy2(file2, filename)
    
   def walk(self, folder):
-    if args.verbose:
+    if self.verbose:
       print 'In', folder
+    if self.exclude:
+      excludeFolder = folder.replace(self.path1, '', 1)
+      if excludeFolder in self.exclude:
+        print 'Excluding', folder
+        self.exclude.remove(excludeFolder)
+        return
     os.chdir(folder)
     files, dirs = self.splitDirsAndFiles(folder)
     folder2 = self.splitAndForm(folder)
@@ -77,7 +86,11 @@ class Sync:
       os.chdir(folder)
       self.walk(os.path.abspath(directory))
 
-folders = ['/home/ateet/Documents/codes/', '/grive/codes/']
+if 1:
+  folders = ['~/Documents/codes/', '/grive/codes/']
+else: #test
+  folders = ['~/Documents/codes/', '~/Documents/blah/code/']
+
 if args.folders:
   folders = args.folders
-Sync(folders[0], folders[1], args.dry_run)
+Sync(folders[0], folders[1], args.verbose, args.dry_run, args.exclude)
